@@ -1,0 +1,51 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: "`input_output` test test"
+      id: input_output-test-test
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: "`input_output` test test"
+        setup-command: cd
+        command: 'cd '
+        input: 1+1
+        expected-output: '2'
+        comparison-method: contains
+        timeout: 1
+        max-score: 1
+    - name: "'run_command' test test"
+      id: run_command-test-test
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: "'run_command' test test"
+        setup-command: cd
+        command: ls
+        timeout: 1
+        max-score: 2
+    - name: python test test
+      id: python-test-test
+      uses: classroom-resources/autograding-python-grader@v1
+      with:
+        timeout: 1
+        max-score: 3
+        setup-command: pip list
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        INPUT_OUTPUT-TEST-TEST_RESULTS: "${{steps.input_output-test-test.outputs.result}}"
+        RUN_COMMAND-TEST-TEST_RESULTS: "${{steps.run_command-test-test.outputs.result}}"
+        PYTHON-TEST-TEST_RESULTS: "${{steps.python-test-test.outputs.result}}"
+      with:
+        runners: input_output-test-test,run_command-test-test,python-test-test
